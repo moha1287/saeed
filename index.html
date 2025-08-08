@@ -1,19 +1,45 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="">
+<html lang="fr">
 <head>
-<title></title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<br/>
-<style type="text/css">
-<!--
-p {margin: 0; padding: 0;}
--->
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Inspect</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: url('target001.png') no-repeat center top;
+            background-size: cover;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .overlay {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background: blue;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .btn:hover {
+            background: darkblue;
+        }
+    </style>
 </head>
-<body bgcolor="#A0A0A0" vlink="blue" link="blue">
-<div id="page1-div" style="position:relative;width:1860px;height:2629px;">
-<img width="1860" height="2629" src="target001.png" alt="background image"/>
-</div>
+<body>
+    <div class="overlay">
+        <h1>Ceci est un test</h1>
+        <p>Tu peux maintenant faire clic droit → Inspecter</p>
+        <a href="#" class="btn">Clique ici</a>
+    </div>
 </body>
 </html>
