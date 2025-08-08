@@ -1,45 +1,272 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Inspect</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: url('target001.png') no-repeat center top;
-            background-size: cover;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-        .overlay {
-            position: absolute;
-            top: 50px;
-            left: 50px;
-            background: rgba(255, 255, 255, 0.8);
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .btn {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 10px 15px;
-            background: blue;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .btn:hover {
-            background: darkblue;
-        }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Simulation de fiche de paie (éditable)</title>
+<style>
+  :root{
+    --bg:#f6f7fb; --card:#ffffff; --ink:#111; --muted:#6b7280; --line:#e5e7eb; --accent:#0ea5e9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:system-ui,Segoe UI,Arial,sans-serif;color:var(--ink)}
+  .wrap{max-width:1000px;margin:32px auto;padding:0 16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 1px 10px rgba(0,0,0,.05)}
+  header{padding:20px 22px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+  header h1{margin:0;font-size:20px}
+  header .meta{font-size:12px;color:var(--muted);line-height:1.3}
+  .badge{font-size:12px;color:#fff;background:linear-gradient(135deg,#ef4444,#f59e0b);padding:4px 8px;border-radius:999px;font-weight:700}
+  .section{padding:16px 22px;border-top:1px solid var(--line)}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .label{font-size:12px;color:var(--muted)}
+  .box{min-height:34px;padding:6px 8px;border:1px dashed var(--line);border-radius:8px;background:#fff}
+  .box[contenteditable="true"]:focus{outline:2px solid var(--accent);border-color:transparent;background:#eff6ff}
+  table{width:100%;border-collapse:collapse;margin-top:8px}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:right;font-variant-numeric:tabular-nums}
+  th{background:#f3f4f6;text-align:center}
+  td.desc, th.desc{text-align:left}
+  tfoot td{font-weight:700;background:#fbfdff}
+  .muted{color:var(--muted)}
+  .row-actions{display:flex;gap:8px;margin-top:8px}
+  button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 10px;cursor:pointer}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  .right{display:flex;gap:12px;align-items:center}
+  .pill{padding:6px 10px;border-radius:999px;background:#eef6ff;color:#0369a1;font-size:12px}
+  .watermark{position:fixed;inset:0;pointer-events:none;display:grid;place-items:center;opacity:.1;font-size:72px;font-weight:800;letter-spacing:.2em}
+  .totline{display:flex;justify-content:space-between;margin-top:10px;font-weight:700}
+  .small{font-size:12px}
+</style>
 </head>
 <body>
-    <div class="overlay">
-        <h1>Ceci est un test</h1>
-        <p>Tu peux maintenant faire clic droit → Inspecter</p>
-        <a href="#" class="btn">Clique ici</a>
+<div class="watermark">SIMULATION</div>
+<div class="wrap">
+  <div class="card">
+
+    <header>
+      <div>
+        <h1>Simulation de fiche de paie</h1>
+        <div class="meta">Période : <span contenteditable="true">01/06/2025 – 30/06/2025</span><br>
+          Établie le : <span contenteditable="true">30/06/2025</span></div>
+      </div>
+      <div class="right">
+        <span class="pill">Clique &amp; modifie</span>
+        <span class="badge">PÉDAGOGIQUE</span>
+      </div>
+    </header>
+
+    <div class="section">
+      <div class="grid">
+        <div>
+          <div class="label">Employeur</div>
+          <div class="box" contenteditable="true">Société Exemple SRL</div>
+        </div>
+        <div>
+          <div class="label">N° entreprise</div>
+          <div class="box" contenteditable="true">BE000.000.000</div>
+        </div>
+        <div>
+          <div class="label">Travailleur</div>
+          <div class="box" contenteditable="true">Nom Prénom</div>
+        </div>
+        <div>
+          <div class="label">Adresse</div>
+          <div class="box" contenteditable="true">Rue Exemple 1, 7000 Mons</div>
+        </div>
+      </div>
     </div>
+
+    <div class="section">
+      <div class="label">CALCUL</div>
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th class="desc">Description</th>
+            <th>Jours/Unit.</th>
+            <th>Heures</th>
+            <th>Période</th>
+            <th>Équipe</th>
+            <th>%</th>
+            <th>Val.unit</th>
+            <th>Montants (EUR)</th>
+          </tr>
+        </thead>
+        <tbody id="body">
+          <!-- Lignes de base (éditables) -->
+          <tr data-group="brut">
+            <td class="desc" contenteditable="true">Salaire mensuel garanti accident de travail</td>
+            <td contenteditable="true">4,00</td>
+            <td contenteditable="true">15,00</td>
+            <td contenteditable="true">03–06</td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true">12,4731</td>
+            <td contenteditable="true" class="amt">187,13</td>
+          </tr>
+          <tr data-group="brut">
+            <td class="desc" contenteditable="true">Salaire mensuel garanti accident de travail</td>
+            <td contenteditable="true">8,00</td>
+            <td contenteditable="true">30,00</td>
+            <td contenteditable="true">10–20</td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true">12,4731</td>
+            <td contenteditable="true" class="amt">374,20</td>
+          </tr>
+          <tr data-group="brut">
+            <td class="desc" contenteditable="true">Accident de travail TT après 30ème jour</td>
+            <td contenteditable="true">4,00</td>
+            <td contenteditable="true">15,00</td>
+            <td contenteditable="true">24–27</td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true">78,9985</td>
+            <td contenteditable="true" class="amt">79,00</td>
+          </tr>
+          <tr data-group="brut">
+            <td class="desc" contenteditable="true">Jour férié après sortie</td>
+            <td contenteditable="true">1,00</td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">549,81</td>
+          </tr>
+
+          <!-- Lignes “autres” (ex: primes, retenues). Montants négatifs si retenues -->
+          <tr data-group="autres">
+            <td class="desc" contenteditable="true">Pécule de sortie année en cours</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">236,00</td>
+          </tr>
+          <tr data-group="cotisations">
+            <td class="desc" contenteditable="true">Cotisation ONSS pécule de vacances</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">-13,67</td>
+          </tr>
+          <tr data-group="cotisations">
+            <td class="desc" contenteditable="true">Cotisation pécule simple</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">-15,42</td>
+          </tr>
+          <tr data-group="cotisations">
+            <td class="desc" contenteditable="true">Cotisation ONSS travailleur</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">-155,55</td>
+          </tr>
+          <tr data-group="cotisations">
+            <td class="desc" contenteditable="true">Réduction cotisations ONSS travailleur</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">73,42</td>
+          </tr>
+
+          <tr data-group="divers">
+            <td class="desc" contenteditable="true">Activa chômeur longue durée RW</td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true"></td><td contenteditable="true"></td><td contenteditable="true"></td>
+            <td contenteditable="true" class="amt">-148,03</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr><td class="desc" colspan="7">Total rémunérations brutes</td><td id="totBrut">0,00</td></tr>
+          <tr><td class="desc" colspan="7">Total cotisations travailleur</td><td id="totCot">0,00</td></tr>
+          <tr><td class="desc" colspan="7">Total divers net</td><td id="totDiv">0,00</td></tr>
+          <tr><td class="desc" colspan="7">Net</td><td id="net">0,00</td></tr>
+          <tr><td class="desc" colspan="7">Net final</td><td id="netFinal">0,00</td></tr>
+        </tfoot>
+      </table>
+
+      <div class="row-actions">
+        <button id="add">+ Ajouter une ligne</button>
+        <button id="fmt">Ré-appliquer le format €</button>
+      </div>
+      <div class="small muted">Astuce : double-clique sur un montant pour le modifier. Utilise un **point** ou **virgule** comme séparateur décimal ; les totaux se recalculent automatiquement.</div>
+    </div>
+
+    <div class="section">
+      <div class="totline"><span>Objectif net mensuel (ex. 1700 €)</span>
+        <span><input id="goal" type="text" value="1 700,00" style="width:140px;text-align:right;padding:6px 8px;border:1px solid var(--line);border-radius:8px"></span>
+      </div>
+      <div class="small muted" id="deltaTxt">Écart : 0,00 €</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* Helpers format / parse (fr) */
+const nf = new Intl.NumberFormat('fr-FR',{minimumFractionDigits:2, maximumFractionDigits:2});
+const parseEU = (s)=>{
+  if(!s) return 0;
+  s = (''+s).replace(/\s/g,'').replace(/\u202f/g,'').replace(',', '.');
+  return Number(s) || 0;
+};
+const fmtEU = (n)=> nf.format(n);
+
+/* Recalc totals */
+function recalc(){
+  let brut=0, cot=0, divers=0;
+  document.querySelectorAll('#body tr').forEach(tr=>{
+    const amtCell = tr.querySelector('.amt');
+    if(!amtCell) return;
+    const v = parseEU(amtCell.innerText);
+    const g = tr.dataset.group;
+    if(g==='brut') brut+=v;
+    else if(g==='cotisations') cot+=v;
+    else if(g==='divers') divers+=v;
+    else brut += 0; // ignore others
+  });
+  const net = brut + cot + divers; // cotisations/divers peuvent être négatifs
+  document.getElementById('totBrut').innerText = fmtEU(brut);
+  document.getElementById('totCot').innerText  = fmtEU(cot);
+  document.getElementById('totDiv').innerText  = fmtEU(divers);
+  document.getElementById('net').innerText     = fmtEU(net);
+  document.getElementById('netFinal').innerText= fmtEU(net);
+
+  const goal = parseEU(document.getElementById('goal').value);
+  const delta = goal - net;
+  document.getElementById('deltaTxt').innerText = `Écart : ${fmtEU(delta)} € (objectif – net)`;
+}
+
+/* Format all amounts */
+function formatAll(){
+  document.querySelectorAll('.amt').forEach(td=>{
+    td.innerText = fmtEU(parseEU(td.innerText));
+  });
+  recalc();
+}
+
+/* Add row */
+document.getElementById('add').addEventListener('click', ()=>{
+  const tr = document.createElement('tr');
+  tr.setAttribute('data-group','brut');
+  tr.innerHTML = `
+    <td class="desc" contenteditable="true">Nouvelle ligne</td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true"></td>
+    <td contenteditable="true" class="amt">0,00</td>`;
+  document.getElementById('body').appendChild(tr);
+});
+
+document.getElementById('fmt').addEventListener('click', formatAll);
+document.getElementById('goal').addEventListener('input', recalc);
+
+/* Recalc on edits */
+document.addEventListener('input', (e)=>{
+  if(e.target.matches('.amt,[contenteditable="true"]')) recalc();
+});
+
+/* Init */
+formatAll();
+</script>
 </body>
 </html>
